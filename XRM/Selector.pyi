@@ -120,7 +120,16 @@ class Selector:
         :return: Selector wrapping the immediate child elements of <html> or root if no <html> tag.
         :rtype: Selector
         """
-    
+
+    def text(self) -> 'StringList':
+        """
+        Get the text contents of all selected Tags.
+
+        :return: StringList of all the text contents
+        :rtype: StringList
+        """
+
+
     def descendants(self, tag: str) -> 'Selector':
         """
         Find all descendant elements with the given tag name.
