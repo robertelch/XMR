@@ -38,7 +38,7 @@ class Selector:
             if item not in seen:
                 seen.add(item)
                 result.append(item)
-        self.elements = result
+        self.elements: list[Tag] = result
 
     def __repr__(self):
         names = [el.name for el in self.elements]
@@ -63,6 +63,13 @@ class Selector:
         children = [el for el in root.children if isinstance(el, Tag)]
         return cls(children)
     
+    def text(self) -> StringList:
+        text = []
+        for element in self.elements:
+            if t := element.get_text():
+                text.append(t)
+        return text
+
     def descendants(self, tag: str) -> 'Selector':
         found = []
         for el in self.elements:
