@@ -53,6 +53,10 @@ class Selector:
     def __bool__(self):
         return bool(self.elements)
 
+    def __len__(self):
+        return len(self.elements)
+
+
     def __getitem__(self, index) -> 'Selector':
         try:
             return Selector(self.elements[index])
