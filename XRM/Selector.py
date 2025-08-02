@@ -23,6 +23,9 @@ class StringList:
     
     def __getitem__(self, index):
         return self.elements[index]
+    
+    def as_list(self):
+        return self.elements
 
 class Selector:
     def __init__(self, elements: Union[Tag, List[Tag], 'Selector']):
