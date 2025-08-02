@@ -5,10 +5,12 @@ setup(
     version='0.1.0',
     packages=find_packages(),
     install_requires=[
-        'beautifulsoup4',  # Add other external dependencies you use here
+        'beautifulsoup4', 
+        'lxml'# Add other external dependencies you use here
         # e.g. 'typing-extensions' if needed
     ],
     author='Crumbling',
     author_email='crumblingcookie666@gmail.com',
     description='Describe your package',
 )
+
