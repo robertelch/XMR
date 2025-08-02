@@ -1,4 +1,4 @@
-from Filter import Filter
+from XRM import Filter
 from bs4 import BeautifulSoup, Tag
 from typing import Union, List, Optional
 
@@ -100,3 +100,4 @@ class Selector:
     def filter(self, filter_obj: Filter) -> 'Selector':
         filtered_elements = [el for el in self.elements if filter_obj(el)]
         return Selector(filtered_elements)
+
