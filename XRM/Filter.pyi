@@ -220,3 +220,54 @@ class Filter:
         :rtype: Filter
         """
         ...
+
+    @classmethod
+    def text_contains(cls, value: str) -> 'Filter':
+        """
+        Create a filter that matches if the element's text content contains the specified value.
+
+        :param value: Substring to search for in the element's text.
+        :type value: str
+        :return: A Filter instance matching elements whose text contains the given value.
+        :rtype: Filter
+        """
+
+    @classmethod
+    def text_equals(cls, value: str) -> 'Filter':
+        """
+        Create a filter that matches if the element's text content is exactly equal to the specified value.
+
+        :param value: String to compare with the element's text.
+        :type value: str
+        :return: A Filter instance matching elements whose text exactly equals the given value.
+        :rtype: Filter
+        """
+
+    @classmethod
+    def text_matches(cls, pattern: str) -> 'Filter':
+        """
+        Create a filter that matches if the element's text content matches the given regex pattern.
+
+        :param pattern: Regular expression pattern to apply to the element's text.
+        :type pattern: str
+        :return: A Filter instance matching elements whose text matches the regex pattern.
+        :rtype: Filter
+        """
+
+    @classmethod
+    def text_exists(cls) -> 'Filter':
+        """
+        Create a filter that matches if the element has any non-empty text content.
+
+        :return: A Filter instance matching elements with non-empty text.
+        :rtype: Filter
+        """
+
+    @classmethod
+    def text_not_exists(cls) -> 'Filter':
+        """
+        Create a filter that matches if the element has no text content or only whitespace.
+
+        :return: A Filter instance matching elements with no meaningful text.
+        :rtype: Filter
+        """

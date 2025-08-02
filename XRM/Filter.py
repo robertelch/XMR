@@ -48,15 +48,26 @@ class Filter:
     def not_exists(cls, attr_name: str) -> 'Filter':
         return cls(lambda el: el.get(attr_name) is None)
 
-    # Logical combinators
-    def __and__(self, other: 'Filter') -> 'Filter':
-        return Filter(lambda el: self(el) and other(el))
+    @classmethod
+    def text_contains(cls, value: str) -> 'Filter':
+        return cls(lambda el: value in (el.get_text() or ''))
 
-    def __or__(self, other: 'Filter') -> 'Filter':
-        return Filter(lambda el: self(el) or other(el))
+    @classmethod
+    def text_equals(cls, value: str) -> 'Filter':
+        return cls(lambda el: (el.get_text() or '') == value)
 
-    def __invert__(self) -> 'Filter':
-        return Filter(lambda el: not self(el))
+    @classmethod
+    def text_matches(cls, pattern: str) -> 'Filter':
+        regex = re.compile(pattern)
+        return cls(lambda el: bool(regex.search(el.get_text() or '')))
+
+    @classmethod
+    def text_exists(cls) -> 'Filter':
+        return cls(lambda el: bool((el.get_text() or '').strip()))
+
+    @classmethod
+    def text_not_exists(cls) -> 'Filter':
+        return cls(lambda el: not (el.get_text() or '').strip())
 
     # Optional fluent versions
     def and_(self, other: 'Filter') -> 'Filter':
@@ -67,3 +78,13 @@ class Filter:
 
     def invert(self) -> 'Filter':
         return ~self
+
+    # Logical combinators
+    def __and__(self, other: 'Filter') -> 'Filter':
+        return Filter(lambda el: self(el) and other(el))
+
+    def __or__(self, other: 'Filter') -> 'Filter':
+        return Filter(lambda el: self(el) or other(el))
+
+    def __invert__(self) -> 'Filter':
+        return Filter(lambda el: not self(el))
