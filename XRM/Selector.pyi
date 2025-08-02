@@ -66,6 +66,13 @@ class StringList:
         :rtype: str
         """
 
+    def as_list(self):
+        """
+        Return the internal list of string elements.
+
+        :return: The list of strings contained in the StringList.
+        :rtype: list[str]
+        """
 class Selector:
     def __init__(self, elements: Union[Tag, List[Tag], 'Selector']):
         """
