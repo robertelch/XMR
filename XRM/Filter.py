@@ -16,6 +16,12 @@ class Filter:
         return cls(lambda el: value in (el.get(attr_name) or ''))
 
     @classmethod
+    def contains_all(cls, attr_name: str, values: list[str]) -> 'Filter':
+        if isinstance(values, str):
+            values = [values]
+        return cls(lambda el: all(val in (el.get(attr_name) or '') for val in values))
+
+    @classmethod
     def not_contains(cls, attr_name: str, value: str) -> 'Filter':
         return cls(lambda el: value not in (el.get(attr_name) or ''))
 

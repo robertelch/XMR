@@ -37,6 +37,8 @@ class Filter:
         """
         ...
 
+
+
     @classmethod
     def contains(cls, attr_name: str, value: str) -> 'Filter':
         """
@@ -47,6 +49,20 @@ class Filter:
         :param value: Substring to search for within the attribute's value.
         :type value: str
         :return: A Filter instance matching elements whose attribute contains the value.
+        :rtype: Filter
+        """
+        ...
+
+    @classmethod
+    def contains_all(cls, attr_name: str, values: list[str]) -> 'Filter':
+        """
+        Create a filter that matches if the specified attribute contains all of the given value.
+
+        :param attr_name: Name of the attribute to check.
+        :type attr_name: str
+        :param values: List of values that must all be present within the attribute's value.
+        :type values: list[str]
+        :return: A Filter instance matching elements whose attribute contains all specified values.
         :rtype: Filter
         """
         ...
