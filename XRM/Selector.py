@@ -75,7 +75,7 @@ class Selector:
         for element in self.elements:
             if t := element.get_text():
                 text.append(t)
-        return text
+        return StringList(text)
 
     def descendants(self, tag: str) -> 'Selector':
         found = []
