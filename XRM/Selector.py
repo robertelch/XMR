@@ -6,9 +6,6 @@ class StringList:
     def __init__(self, elements: list[str]):
         self.elements = elements
 
-    def split_and_index(self, split_char: str, index: int) -> 'StringList':
-        return StringList([el.split(split_char)[index] for el in self.elements])
-    
     def __iter__(self):
         return iter(self.elements)
     
@@ -23,12 +20,22 @@ class StringList:
     
     def __getitem__(self, index):
         return self.elements[index]
-    
+
+    def split_and_index(self, split_char: str, index: int) -> 'StringList':
+        return StringList([el.split(split_char)[index] for el in self.elements])
+
     def as_list(self) -> list[str]:
         return self.elements
     
     def clean(self) -> 'StringList':
         return StringList([el for el in self.elements if el])
+
+    def replace(self, input: str, output: str) -> 'StringList':
+        return StringList([el.replace(input, output) for el in self.elements])
+    
+    def strip(self) -> 'StringList':
+        return StringList([el.strip() for el in self.elements])
+
 
 class Selector:
     def __init__(self, elements: Union[Tag, List[Tag], 'Selector']):

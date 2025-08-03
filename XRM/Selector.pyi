@@ -81,6 +81,23 @@ class StringList:
         :return: A StringList with all the empty strings removed.
         :rtype: Stringlist
         """
+
+    def replace(self, input: str, output: str) -> 'StringList':
+        """
+        Returns the StringList with replace applied on every element
+
+        :return: A StringList with replace applied on every element
+        :rtype: Stringlist
+        """
+    
+    def strip(self) -> 'StringList':
+        """
+        Returns the StringList with strip applied on every element
+
+        :return: A StringList with strip applied on every element
+        :rtype: Stringlist
+        """
+
 class Selector:
     def __init__(self, elements: Union[Tag, List[Tag], 'Selector']):
         """
