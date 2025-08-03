@@ -24,11 +24,11 @@ class StringList:
     def __getitem__(self, index):
         return self.elements[index]
     
-    def as_list(self):
+    def as_list(self) -> list[str]:
         return self.elements
     
-    def clean(self):
-        return [el for el in self.elements if el]
+    def clean(self) -> 'StringList':
+        return StringList([el for el in self.elements if el])
 
 class Selector:
     def __init__(self, elements: Union[Tag, List[Tag], 'Selector']):
