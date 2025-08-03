@@ -72,9 +72,9 @@ class Selector:
 
     @classmethod
     def from_html_string(cls, htmlstr: str) -> 'Selector':
-        soup = BeautifulSoup(f"<cont>{htmlstr}</cont>", "lxml")
+        soup = BeautifulSoup(htmlstr, "lxml")
 
-        return cls(soup.find("cont"))
+        return cls(soup)
     
     def text(self) -> StringList:
         text = []
