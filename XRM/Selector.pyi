@@ -177,6 +177,18 @@ class Selector:
         :rtype: Selector
         """
 
+    def nth_child(self, tag: str, n: int) -> 'Selector':
+        """
+        Get the nth child element with the given tag from each wrapped element.
+
+        :param tag: Tag name to search for.
+        :type tag: str
+        :param n: 1-based index of the child to select.
+        :type n: int
+        :return: Selector wrapping the nth matching child elements.
+        :rtype: Selector
+        """
+
     def contains(self, attr: str, value: str) -> 'Selector':
         """
         Select elements that have an attribute containing the given value.

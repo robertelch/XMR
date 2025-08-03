@@ -103,6 +103,14 @@ class Selector:
             if len(matches) >= n:
                 found.append(matches[n - 1])
         return Selector(found)
+    
+    def nth_child(self, tag: str, n: int) -> 'Selector':
+        found = []
+        for el in self.elements:
+            matches = el.find_all(tag,recursive=False)
+            if len(matches) >= n:
+                found.append(matches[n - 1])
+        return Selector(found)
 
     def contains(self, attr: str, value: str) -> 'Selector':
         found = [el for el in self.elements if el.has_attr(attr) and value in el[attr]]
