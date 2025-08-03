@@ -163,7 +163,25 @@ class Selector:
         :rtype: StringList
         """
 
+    def following_sibling(self, tag: str) -> 'Selector':
+        """
+        Find all following-sibling elements with the given tag name.
 
+        :param tag: The tag name to search for among following-siblings.
+        :type tag: str
+        :return: Selector wrapping all matching following-sibling elements.
+        :rtype: Selector
+        """
+
+    def preceding_sibling(self, tag: str) -> 'Selector':
+        """
+        Find all preceding-sibling elements with the given tag name.
+
+        :param tag: The tag name to search for among preceding-siblings.
+        :type tag: str
+        :return: Selector wrapping all matching preceding-sibling elements.
+        :rtype: Selector
+        """
     def descendants(self, tag: str) -> 'Selector':
         """
         Find all descendant elements with the given tag name.

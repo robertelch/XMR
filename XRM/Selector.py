@@ -90,6 +90,20 @@ class Selector:
                 text.append(t)
         return StringList(text)
 
+    def following_sibling(self, tag: str) -> 'Selector':
+        siblings = []
+        for element in self.elements:
+            if t := element.find_next_siblings(tag):
+                siblings.append(t)
+        return Selector(siblings)
+
+    def preceding_sibling(self, tag: str) -> 'Selector':
+        siblings = []
+        for element in self.elements:
+            if t := element.find_previous_siblings(tag):
+                siblings.append(t)
+        return Selector(siblings)
+
     def descendants(self, tag: str) -> 'Selector':
         if tag == '*':
             tag = True
