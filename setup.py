@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='XRM',  # Change to your package name
-    version='0.1.9',
+    version='0.1.10',
     packages=find_packages(),
     install_requires=[
         'beautifulsoup4', 

@@ -26,6 +26,9 @@ class StringList:
     
     def as_list(self):
         return self.elements
+    
+    def clean(self):
+        return [el for el in self.elements if el]
 
 class Selector:
     def __init__(self, elements: Union[Tag, List[Tag], 'Selector']):

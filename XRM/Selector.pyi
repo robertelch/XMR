@@ -73,6 +73,14 @@ class StringList:
         :return: The list of strings contained in the StringList.
         :rtype: list[str]
         """
+
+    def clean(self):
+        """
+        Returns the StringList with all empty strings removed.
+
+        :return: A StringList with all the empty strings removed.
+        :rtype: Stringlist
+        """
 class Selector:
     def __init__(self, elements: Union[Tag, List[Tag], 'Selector']):
         """
