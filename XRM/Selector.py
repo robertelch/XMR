@@ -77,7 +77,7 @@ class Selector:
     def text(self) -> StringList:
         text = []
         for element in self.elements:
-            if t := element.get_text():
+            if t := element.get_text(strip=True):
                 text.append(t)
         return StringList(text)
 
