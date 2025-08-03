@@ -84,6 +84,8 @@ class Selector:
         return StringList(text)
 
     def descendants(self, tag: str) -> 'Selector':
+        if tag == '*':
+            tag = True
         found = []
         for el in self.elements:
             found.extend(el.find_all(tag))
