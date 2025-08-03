@@ -67,6 +67,9 @@ class Selector:
         except IndexError:
             return Selector([])
 
+    def parse(self):
+        _ = [el.get_text(strip=True) for el in self.elements]
+
     @classmethod
     def from_html_string(cls, htmlstr: str) -> 'Selector':
         soup = BeautifulSoup(htmlstr, "lxml")

@@ -125,6 +125,8 @@ class Selector:
         :rtype: Selector
         """
 
+    def parse(self):
+        ...
     @classmethod
     def from_html_string(cls, htmlstr: str) -> 'Selector':
         """
