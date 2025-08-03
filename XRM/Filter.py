@@ -60,7 +60,7 @@ class Filter:
 
     @classmethod
     def text_equals(cls, value: str) -> 'Filter':
-        return cls(lambda el: (el.get_text() or '') == value)
+        return cls(lambda el: (el.get_text(strip=True) or '') == value)
 
     @classmethod
     def text_matches(cls, pattern: str) -> 'Filter':
