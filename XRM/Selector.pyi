@@ -66,7 +66,7 @@ class StringList:
         :rtype: str
         """
 
-    def as_list(self):
+    def as_list(self) -> list[str]:
         """
         Return the internal list of string elements.
 
@@ -74,7 +74,7 @@ class StringList:
         :rtype: list[str]
         """
 
-    def clean(self):
+    def clean(self) -> 'StringList':
         """
         Returns the StringList with all empty strings removed.
 
