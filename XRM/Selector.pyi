@@ -1,6 +1,6 @@
 from logging import Filter
 from bs4 import Tag
-from typing import Union, List
+from typing import Iterator, Union, List
 
 class StringList:
     def __init__(self, elements: list[str]):
@@ -98,7 +98,7 @@ class Selector:
         :rtype: str
         """
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator['Selector']:
         """
         Return an iterator over the wrapped Tag elements.
 

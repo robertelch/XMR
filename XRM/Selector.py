@@ -1,6 +1,6 @@
 from XRM import Filter
 from bs4 import BeautifulSoup, Tag
-from typing import Union, List, Optional
+from typing import Iterator, Union, List, Optional
 
 class StringList:
     def __init__(self, elements: list[str]):
@@ -50,8 +50,9 @@ class Selector:
         names = [el.name for el in self.elements]
         return f"Selector([{', '.join(names)}])"
 
-    def __iter__(self):
-        return iter(self.elements)
+    def __iter__(self) -> Iterator['Selector']:
+        for el in self.elements:
+            yield Selector(el)
 
     def __bool__(self):
         return bool(self.elements)
