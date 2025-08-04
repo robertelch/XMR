@@ -267,3 +267,5 @@ class Selector:
         :return: Selector wrapping elements for which filter_obj returns True.
         :rtype: Selector
         """
+    def own_text(self, char: str) -> 'StringList':
+        ...

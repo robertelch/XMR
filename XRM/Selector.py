@@ -1,5 +1,5 @@
 from XRM import Filter
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup, Tag, NavigableString
 from typing import Iterator, Union, List, Optional
 from itertools import chain
 class StringList:
@@ -154,3 +154,11 @@ class Selector:
         filtered_elements = [el for el in self.elements if filter_obj(el)]
         return Selector(filtered_elements)
 
+    def own_text(self) -> StringList:
+        texts = []
+        for el in self.elements:
+            own_strings = [str(t).strip() for t in el.contents if isinstance(t, NavigableString)]
+            combined = ' '.join(s for s in own_strings if s)
+            if combined:
+                texts.append(combined)
+        return StringList(texts)
