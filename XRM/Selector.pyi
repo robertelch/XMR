@@ -98,6 +98,8 @@ class StringList:
         :rtype: Stringlist
         """
 
+    def split(self, char: str) -> 'StringList':
+        ...
 class Selector:
     def __init__(self, elements: Union[Tag, List[Tag], 'Selector']):
         """

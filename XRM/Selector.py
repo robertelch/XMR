@@ -1,7 +1,7 @@
 from XRM import Filter
 from bs4 import BeautifulSoup, Tag
 from typing import Iterator, Union, List, Optional
-
+from itertools import chain
 class StringList:
     def __init__(self, elements: list[str]):
         self.elements = elements
@@ -36,6 +36,8 @@ class StringList:
     def strip(self) -> 'StringList':
         return StringList([el.strip() for el in self.elements])
 
+    def split(self, char: str) -> 'StringList':
+        return StringList(list(chain.from_iterable([el.split(char) for el in self.elements])))
 
 class Selector:
     def __init__(self, elements: Union[Tag, List[Tag], 'Selector']):
