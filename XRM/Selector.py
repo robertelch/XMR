@@ -48,8 +48,8 @@ class Selector:
         seen = set()
         result = []
         for item in elements:
-            if item not in seen:
-                seen.add(item)
+            if id(item) not in seen:
+                seen.add(id(item))
                 result.append(item)
         self.elements: list[Tag] = result
 
