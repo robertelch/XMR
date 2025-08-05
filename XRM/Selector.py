@@ -1,6 +1,5 @@
 from typing import Callable
-from StringList import StringList
-from XRM import Filter
+from XRM import Filter, StringList
 from bs4 import BeautifulSoup, Tag, NavigableString
 
 
