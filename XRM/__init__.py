@@ -1,2 +1,2 @@
 from .Filter import Filter
-from .Selector import Selector
+from .Selector import Selector, StringList
