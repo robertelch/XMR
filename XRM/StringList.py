@@ -1,4 +1,5 @@
 from itertools import chain
+import re
 
 class StringList:
     def __init__(self, elements: list[str]) -> 'StringList':
@@ -56,3 +57,9 @@ class StringList:
 
     def split(self, char: str) -> 'StringList':
         return StringList(list(chain.from_iterable([el.split(char) for el in self.elements])))
+    
+    def re_sub(self, pattern: str, repl: str) -> 'StringList':
+        return StringList([re.sub(pattern, repl, el) for el in self.elements])
+    
+    def re_search(self, pattern: str) -> 'StringList':
+        return StringList([(r.group() if (r := re.search(pattern, el)) else None) for el in self.elements])

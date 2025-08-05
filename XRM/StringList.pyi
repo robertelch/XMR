@@ -129,3 +129,25 @@ class StringList:
         :return: Flattened StringList of split parts.
         :rtype: StringList
         """
+
+    def re_sub(self, pattern: str, repl: str) -> 'StringList':
+        """
+        Perform a regex substitution on each element in the list.
+
+        :param pattern: Regex pattern to search for.
+        :type pattern: str
+        :param repl: Replacement string.
+        :type repl: str
+        :return: A new StringList with the pattern replaced by repl in each element.
+        :rtype: StringList
+        """
+
+    def re_search(self, pattern: str) -> 'StringList':
+        """
+        Search for a regex pattern in each element and return the matched substring or None.
+
+        :param pattern: Regex pattern to search for.
+        :type pattern: str
+        :return: A new StringList with the first match found in each element, or None if no match.
+        :rtype: StringList
+        """
