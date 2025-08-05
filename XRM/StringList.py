@@ -1,5 +1,6 @@
 from itertools import chain
 import re
+from typing import Union
 
 class StringList:
     def __init__(self, elements: list[str]) -> 'StringList':
@@ -26,14 +27,7 @@ class StringList:
     def __contains__(self, item: str):
         return item in self.elements.copy()
 
-    def __add__(self, other: 'StringList' | list) -> 'StringList':
-        if isinstance(other, StringList):
-            return StringList(self.elements + other.elements)
-        elif isinstance(other, list):
-            return StringList(self.elements + other)
-        return NotImplemented
-
-    def __add__(self, other: 'StringList' | list) -> 'StringList':
+    def __add__(self, other: Union['StringList', list]) -> 'StringList':
         if isinstance(other, StringList):
             return StringList(self.elements + other.elements)
         elif isinstance(other, list):
