@@ -1,10 +1,10 @@
-from typing import Callable
+from typing import Callable, Union
 from XRM import Filter, StringList
 from bs4 import BeautifulSoup, Tag, NavigableString
 
 
 class Selector:
-    def __init__(self, elements: Tag | list[Tag] | 'Selector'):
+    def __init__(self, elements: Union[Tag , list[Tag] , 'Selector']):
         if isinstance(elements, Selector):
             elements = elements.elements
         elif isinstance(elements, list):
@@ -68,7 +68,7 @@ class Selector:
     def __wildcard_check(self, tag: str):
         return True if tag == "*" else tag
     
-    def __collect_truthy(self, func: Callable[[Tag], Tag | list[Tag]]) -> list[Tag]:
+    def __collect_truthy(self, func: Callable[[Tag], Union[Tag , list[Tag]]]) -> list[Tag]:
         result = []
         for el in self.elements:
             val = func(el)
