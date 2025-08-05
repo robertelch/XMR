@@ -2,7 +2,7 @@ from typing import Iterator, Union, List
 
 
 class StringList:
-    def __init__(self, elements: List[str]) -> None:
+    def __init__(self, elements: List[str]) -> 'StringList':
         """
         Initialize a StringList with a list of strings.
 

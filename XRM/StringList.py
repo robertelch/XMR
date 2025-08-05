@@ -1,7 +1,7 @@
 from itertools import chain
 
 class StringList:
-    def __init__(self, elements: list[str]):
+    def __init__(self, elements: list[str]) -> 'StringList':
         self.elements = elements
 
     def __iter__(self):
