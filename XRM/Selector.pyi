@@ -1,7 +1,6 @@
 from typing import Callable, Union, Iterator
 from bs4 import Tag
-from StringList import StringList
-from XRM import Filter
+from XRM import Filter,StringList
 
 
 class Selector:
