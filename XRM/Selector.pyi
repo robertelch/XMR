@@ -1,151 +1,102 @@
-from logging import Filter
+from typing import Callable, Union, Iterator
 from bs4 import Tag
-from typing import Iterator, Union, List
+from StringList import StringList
+from XRM import Filter
 
-class StringList:
-    def __init__(self, elements: list[str]):
-        """
-        Initialize a StringList instance.
 
-        :param elements: A list of strings to be wrapped by this class.
-        :type elements: list[str]
-        """
-    
-    def split_and_index(self, split_char: str, index: int) -> 'StringList':
-        """
-        Split each string in the list by a given character and return a new StringList
-        containing the element at the specified index from each split result.
-
-        :param split_char: The character to split each string on.
-        :type split_char: str
-        :param index: The index of the split parts to extract.
-        :type index: int
-        :return: A new StringList containing the extracted parts.
-        :rtype: StringList
-        """
-    
-    def __iter__(self):
-        """
-        Return an iterator over the elements.
-
-        :return: An iterator over the string elements.
-        :rtype: iterator
-        """
-    
-    def __len__(self):
-        """
-        Return the number of elements.
-
-        :return: The number of strings in the list.
-        :rtype: int
-        """
-
-    def __repr__(self):
-        """
-        Return a string representation of the StringList.
-
-        :return: String representation of the wrapped list.
-        :rtype: str
-        """
-    
-    def __bool__(self):
-        """
-        Return True if the list has any elements, False otherwise.
-
-        :return: True if not empty, False if empty.
-        :rtype: bool
-        """
-    
-    def __getitem__(self, index):
-        """
-        Return the element at the given index.
-
-        :param index: The index to retrieve.
-        :type index: int
-        :return: The string at the given index.
-        :rtype: str
-        """
-
-    def as_list(self) -> list[str]:
-        """
-        Return the internal list of string elements.
-
-        :return: The list of strings contained in the StringList.
-        :rtype: list[str]
-        """
-
-    def clean(self) -> 'StringList':
-        """
-        Returns the StringList with all empty strings removed.
-
-        :return: A StringList with all the empty strings removed.
-        :rtype: Stringlist
-        """
-
-    def replace(self, input: str, output: str) -> 'StringList':
-        """
-        Returns the StringList with replace applied on every element
-
-        :return: A StringList with replace applied on every element
-        :rtype: Stringlist
-        """
-    
-    def strip(self) -> 'StringList':
-        """
-        Returns the StringList with strip applied on every element
-
-        :return: A StringList with strip applied on every element
-        :rtype: Stringlist
-        """
-
-    def split(self, char: str) -> 'StringList':
-        ...
 class Selector:
-    def __init__(self, elements: Union[Tag, List[Tag], 'Selector']):
+    def __init__(self, elements: Union[Tag, list[Tag], 'Selector']) -> None:
         """
-        Initialize a Selector instance wrapping one or more BeautifulSoup Tag elements.
+        Initialize a Selector wrapping one or multiple BeautifulSoup Tag elements.
 
-        :param elements: A single Tag, a list of Tags, or another Selector.
-        :type elements: Union[Tag, List[Tag], Selector]
+        :param elements: A Tag, a list of Tags, or another Selector instance.
+        :type elements: Tag | list[Tag] | Selector
         """
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
-        Return a string representation of the Selector.
+        Return a string representation showing tag names of contained elements.
 
-        :return: A representation listing the tag names of the wrapped elements.
+        :return: Representation string.
         :rtype: str
         """
 
     def __iter__(self) -> Iterator['Selector']:
         """
-        Return an iterator over the wrapped Tag elements.
+        Iterate over each Tag wrapped individually as a Selector.
 
-        :return: Iterator over the elements.
-        :rtype: iterator
+        :return: Iterator over Selector instances each wrapping a single Tag.
+        :rtype: Iterator[Selector]
         """
 
-    def __bool__(self):
+    def __eq__(self, other: object) -> bool:
         """
-        Return True if there are any wrapped elements, False otherwise.
+        Check equality with another Selector based on underlying elements.
 
-        :return: True if non-empty, False if empty.
+        :param other: Object to compare with.
+        :return: True if both have the same elements.
         :rtype: bool
         """
 
-    def __getitem__(self, index) -> 'Selector':
+    def __ne__(self, other: object) -> bool:
         """
-        Return a Selector wrapping the element(s) at the given index or slice.
+        Check inequality with another Selector based on underlying elements.
 
-        :param index: Index or slice of elements.
-        :type index: int or slice
-        :return: A new Selector containing the selected element(s).
-                 If index is out of range, returns an empty Selector.
+        :param other: Object to compare with.
+        :return: True if elements differ.
+        :rtype: bool
+        """
+
+    def __add__(self, other: 'Selector') -> 'Selector':
+        """
+        Combine elements of this Selector with another Selector.
+
+        :param other: Another Selector instance.
+        :return: New Selector containing elements from both.
         :rtype: Selector
         """
 
-    def parse(self):
-        ...
+    def __reversed__(self) -> 'Selector':
+        """
+        Return a new Selector with elements in reversed order.
+
+        :return: Reversed Selector.
+        :rtype: Selector
+        """
+
+    def __str__(self) -> str:
+        """
+        Return a summary string for this Selector.
+
+        :return: Summary string.
+        :rtype: str
+        """
+
+    def __bool__(self) -> bool:
+        """
+        Return True if this Selector contains any elements.
+
+        :return: True if elements exist, else False.
+        :rtype: bool
+        """
+
+    def __len__(self) -> int:
+        """
+        Return the number of elements wrapped by this Selector.
+
+        :return: Number of elements.
+        :rtype: int
+        """
+
+    def __getitem__(self, index: int) -> 'Selector':
+        """
+        Retrieve a Selector wrapping the element(s) at the given index or slice.
+
+        :param index: Index or slice.
+        :return: Selector wrapping selected elements or empty Selector if out of range.
+        :rtype: Selector
+        """
+
     @classmethod
     def from_html_string(cls, htmlstr: str) -> 'Selector':
         """
@@ -157,115 +108,114 @@ class Selector:
         :rtype: Selector
         """
 
-    def text(self) -> 'StringList':
+    def text(self) -> StringList:
         """
-        Get the text contents of all selected Tags.
+        Extract concatenated and stripped text content of all elements.
 
-        :return: StringList of all the text contents
+        :return: StringList containing text from each element.
         :rtype: StringList
         """
 
-    def following_sibling(self, tag: str) -> 'Selector':
+    def preceding_siblings(self, tag: str = "*") -> 'Selector':
         """
-        Find all following-sibling elements with the given tag name.
+        Get all preceding siblings matching the specified tag for each element.
 
-        :param tag: The tag name to search for among following-siblings.
+        :param tag: Tag name or '*' for any tag.
         :type tag: str
-        :return: Selector wrapping all matching following-sibling elements.
+        :return: Selector with preceding sibling elements.
         :rtype: Selector
         """
 
-    def preceding_sibling(self, tag: str) -> 'Selector':
+    def following_siblings(self, tag: str = "*") -> 'Selector':
         """
-        Find all preceding-sibling elements with the given tag name.
+        Get all following siblings matching the specified tag for each element.
 
-        :param tag: The tag name to search for among preceding-siblings.
+        :param tag: Tag name or '*' for any tag.
         :type tag: str
-        :return: Selector wrapping all matching preceding-sibling elements.
+        :return: Selector with following sibling elements.
         :rtype: Selector
         """
-    def descendants(self, tag: str) -> 'Selector':
-        """
-        Find all descendant elements with the given tag name.
 
-        :param tag: The tag name to search for among descendants.
+    def siblings(self, tag: str = "*") -> 'Selector':
+        """
+        Get all siblings (preceding and following) matching the specified tag for each element.
+
+        :param tag: Tag name or '*' for any tag.
         :type tag: str
-        :return: Selector wrapping all matching descendant elements.
+        :return: Selector with all sibling elements.
+        :rtype: Selector
+        """
+
+    def descendants(self, tag: str = "*") -> 'Selector':
+        """
+        Get all descendant elements matching the specified tag.
+
+        :param tag: Tag name or '*' for any tag.
+        :type tag: str
+        :return: Selector containing all descendants.
         :rtype: Selector
         """
 
     def parent(self) -> 'Selector':
         """
-        Get the parent elements of all wrapped elements.
+        Get the parent elements of each element in this Selector.
 
-        :return: Selector wrapping the parents of the current elements.
+        :return: Selector with parent elements.
         :rtype: Selector
         """
 
-    def children(self, tag: str) -> 'Selector':
+    def children(self, tag: str = "*") -> 'Selector':
         """
-        Find all immediate children with the given tag name.
+        Get direct children matching the specified tag of each element.
 
-        :param tag: The tag name to search for among immediate children.
+        :param tag: Tag name or '*' for any tag.
         :type tag: str
-        :return: Selector wrapping all matching child elements.
+        :return: Selector containing children elements.
         :rtype: Selector
         """
 
-    def nth_descendant(self, tag: str, n: int) -> 'Selector':
+    def nth_descendant(self, tag: str = "*", n: int = 1) -> 'Selector':
         """
-        Get the nth descendant element with the given tag from each wrapped element.
+        Get the nth descendant element matching the tag for each element, counting recursively.
 
-        :param tag: Tag name to search for.
-        :type tag: str
-        :param n: 1-based index of the descendant to select.
-        :type n: int
-        :return: Selector wrapping the nth matching descendant elements.
+        :param tag: Tag name or '*' for any tag.
+        :param n: 1-based index of descendant.
+        :return: Selector with nth descendant elements.
         :rtype: Selector
         """
 
-    def nth_child(self, tag: str, n: int) -> 'Selector':
+    def nth_child(self, tag: str = "*", n: int = 1) -> 'Selector':
         """
-        Get the nth child element with the given tag from each wrapped element.
+        Get the nth direct child element matching the tag for each element.
 
-        :param tag: Tag name to search for.
-        :type tag: str
-        :param n: 1-based index of the child to select.
-        :type n: int
-        :return: Selector wrapping the nth matching child elements.
-        :rtype: Selector
-        """
-
-    def contains(self, attr: str, value: str) -> 'Selector':
-        """
-        Select elements that have an attribute containing the given value.
-
-        :param attr: Attribute name.
-        :type attr: str
-        :param value: Substring to look for inside the attribute value.
-        :type value: str
-        :return: Selector wrapping elements where attr contains value.
+        :param tag: Tag name or '*' for any tag.
+        :param n: 1-based index of child.
+        :return: Selector with nth child elements.
         :rtype: Selector
         """
 
     def get_attribute(self, attribute: str) -> StringList:
         """
-        Extract the given attribute from all wrapped elements.
+        Retrieve the value of the given attribute from each element.
 
-        :param attribute: The attribute name to extract.
-        :type attribute: str
-        :return: A StringList containing the attribute values.
+        :param attribute: Attribute name.
+        :return: StringList of attribute values (or None where missing).
         :rtype: StringList
         """
 
     def filter(self, filter_obj: Filter) -> 'Selector':
         """
-        Filter elements based on a provided callable filter object.
+        Filter elements based on a callable Filter object.
 
-        :param filter_obj: A callable that accepts a Tag and returns True or False.
-        :type filter_obj: Filter
-        :return: Selector wrapping elements for which filter_obj returns True.
+        :param filter_obj: A Filter callable that takes a Tag and returns a bool.
+        :return: Selector with elements that satisfy the filter.
         :rtype: Selector
         """
-    def own_text(self, char: str) -> 'StringList':
-        ...
+
+    def own_text(self) -> StringList:
+        """
+        Extract only the direct text content (not from descendants) of each element.
+
+        :return: StringList of direct text strings for each element.
+        :rtype: StringList
+        """

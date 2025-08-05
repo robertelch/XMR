@@ -1,46 +1,11 @@
+from typing import Callable
+from StringList import StringList
 from XRM import Filter
 from bs4 import BeautifulSoup, Tag, NavigableString
-from typing import Iterator, Union, List, Optional
-from itertools import chain
-class StringList:
-    def __init__(self, elements: list[str]):
-        self.elements = elements
 
-    def __iter__(self):
-        return iter(self.elements)
-    
-    def __len__(self):
-        return len(self.elements)
-
-    def __repr__(self):
-        return repr(self.elements)
-    
-    def __bool__(self):
-        return bool(self.elements)
-    
-    def __getitem__(self, index):
-        return self.elements[index]
-
-    def split_and_index(self, split_char: str, index: int) -> 'StringList':
-        return StringList([el.split(split_char)[index] for el in self.elements])
-
-    def as_list(self) -> list[str]:
-        return self.elements
-    
-    def clean(self) -> 'StringList':
-        return StringList([el for el in self.elements if el])
-
-    def replace(self, input: str, output: str) -> 'StringList':
-        return StringList([el.replace(input, output) for el in self.elements])
-    
-    def strip(self) -> 'StringList':
-        return StringList([el.strip() for el in self.elements])
-
-    def split(self, char: str) -> 'StringList':
-        return StringList(list(chain.from_iterable([el.split(char) for el in self.elements])))
 
 class Selector:
-    def __init__(self, elements: Union[Tag, List[Tag], 'Selector']):
+    def __init__(self, elements: Tag | list[Tag] | 'Selector'):
         if isinstance(elements, Selector):
             elements = elements.elements
         elif isinstance(elements, list):
@@ -59,9 +24,30 @@ class Selector:
         names = [el.name for el in self.elements]
         return f"Selector([{', '.join(names)}])"
 
-    def __iter__(self) -> Iterator['Selector']:
+    def __iter__(self):
         for el in self.elements:
             yield Selector(el)
+
+    def __eq__(self, other: 'Selector'):
+        if not isinstance(other, Selector):
+            return NotImplemented
+        return self.elements == other.elements
+
+    def __ne__(self, other: 'Selector'):
+        if not isinstance(other, Selector):
+            return NotImplemented
+        return self.elements != other.elements  
+
+    def __add__(self, other: 'Selector'):
+        if not isinstance(other, Selector):
+            return NotImplemented
+        return Selector(self.elements + other.elements)
+    
+    def __reversed__(self):
+        return Selector(list(reversed(self.elements)))
+    
+    def __str__(self):
+        return f"<Selector with {len(self.elements)} elements>"
 
     def __bool__(self):
         return bool(self.elements)
@@ -69,83 +55,74 @@ class Selector:
     def __len__(self):
         return len(self.elements)
 
-
     def __getitem__(self, index) -> 'Selector':
         try:
             return Selector(self.elements[index])
         except IndexError:
             return Selector([])
 
-    def parse(self):
-        _ = [el.get_text(strip=True) for el in self.elements]
-
     @classmethod
     def from_html_string(cls, htmlstr: str) -> 'Selector':
         soup = BeautifulSoup(htmlstr, "lxml")
-
         return cls(soup)
     
+    def __wildcard_check(self, tag: str):
+        return True if tag == "*" else tag
+    
+    def __collect_truthy(self, func: Callable[[Tag], Tag | list[Tag]]) -> list[Tag]:
+        result = []
+        for el in self.elements:
+            val = func(el)
+            if val:
+                if isinstance(val, Tag):
+                    result.append(val)
+                elif isinstance(val, list):
+                    result.extend(val)
+        return result
+
     def text(self) -> StringList:
-        text = []
-        for element in self.elements:
-            if t := element.get_text(strip=True):
-                text.append(t)
+        text = [t for e in self.elements if (t := e.get_text(strip=True))]
         return StringList(text)
 
-    def following_sibling(self, tag: str) -> 'Selector':
-        siblings = []
-        for element in self.elements:
-            if t := element.find_next_siblings(tag):
-                siblings.append(t)
+    def preceding_siblings(self, tag: str = "*") -> 'Selector':
+        tag = self.__wildcard_check(tag)
+        siblings = self.__collect_truthy(lambda el: el.find_previous_siblings(tag))
         return Selector(siblings)
 
-    def preceding_sibling(self, tag: str) -> 'Selector':
-        siblings = []
-        for element in self.elements:
-            if t := element.find_previous_siblings(tag):
-                siblings.append(t)
+    def following_siblings(self, tag: str = "*") -> 'Selector':
+        tag = self.__wildcard_check(tag)
+        siblings = self.__collect_truthy(lambda el: el.find_next_siblings(tag))
         return Selector(siblings)
 
-    def descendants(self, tag: str) -> 'Selector':
-        if tag == '*':
-            tag = True
-        found = []
-        for el in self.elements:
-            found.extend(el.find_all(tag))
-        return Selector(found)
+    def siblings(self, tag: str = "*"):
+        tag = self.__wildcard_check(tag)
+        siblings = self.preceding_siblings(tag) + self.following_siblings(tag) 
+        return siblings
+
+    def descendants(self, tag: str = "*") -> 'Selector':
+        tag = self.__wildcard_check(tag)
+        siblings = self.__collect_truthy(lambda el: el.find_all(tag))
+        return Selector(siblings)
 
     def parent(self) -> 'Selector':
-        found = []
-        for el in self.elements:
-            if par := el.parent:
-                found.append(par)
+        found = self.__collect_truthy(lambda el: el.parent)
         return Selector(found)
 
-    def children(self, tag: str) -> 'Selector':
-        found = []
-        for el in self.elements:
-            found.extend(el.find_all(tag, recursive=False))
+    def children(self, tag: str = "*") -> 'Selector':
+        tag = self.__wildcard_check(tag)
+        found = self.__collect_truthy(lambda el: el.find_all(tag, recursive=False))
         return Selector(found)
 
-    def nth_descendant(self, tag: str, n: int) -> 'Selector':
-        found = []
-        for el in self.elements:
-            matches = el.find_all(tag)
-            if len(matches) >= n:
-                found.append(matches[n - 1])
-        return Selector(found)
-    
-    def nth_child(self, tag: str, n: int) -> 'Selector':
-        found = []
-        for el in self.elements:
-            matches = el.find_all(tag,recursive=False)
-            if len(matches) >= n:
-                found.append(matches[n - 1])
+    def __nth_sub_element(self, tag: str = "*", n: int = 1, recursive: bool = True) -> 'Selector':
+        tag = self.__wildcard_check(tag)
+        found = [match[n - 1] for el in self.elements if (match := el.find_all(tag, recursive=recursive)) and len(match) >= n]
         return Selector(found)
 
-    def contains(self, attr: str, value: str) -> 'Selector':
-        found = [el for el in self.elements if el.has_attr(attr) and value in el[attr]]
-        return Selector(found)
+    def nth_descendant(self, tag: str = "*", n: int = 1) -> 'Selector':
+        return self.__nth_sub_element(tag, n, recursive=True)
+        
+    def nth_child(self, tag: str = "*", n: int = 1) -> 'Selector':
+        return self.__nth_sub_element(tag, n, recursive=False)
 
     def get_attribute(self, attribute: str) -> StringList:
         return StringList([el.get(attribute) for el in self.elements])
