@@ -1,3 +1,3 @@
-from .Filter import Filter
-from .Selector import Selector
-from .StringList import StringList
+from Filter import Filter
+from Selector import Selector
+from StringList import StringList
