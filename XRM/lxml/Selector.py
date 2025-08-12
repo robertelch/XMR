@@ -158,12 +158,14 @@ class Selector:
     def __init__(self, elements: Union[etree._Element, List[etree._Element], 'Selector']):
         if isinstance(elements, Selector):
             elements = elements.elements
+
+
         elif isinstance(elements, list):
             # Filter out duplicates by id
             seen = set()
             result = []
             for el in elements:
-                if isinstance(el, etree._Element):
+                if isinstance(el, etree._Element) and not isinstance(el, etree._Comment):
                     if id(el) not in seen:
                         seen.add(id(el))
                         result.append(el)
