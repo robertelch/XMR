@@ -163,9 +163,10 @@ class Selector:
             seen = set()
             result = []
             for el in elements:
-                if id(el) not in seen:
-                    seen.add(id(el))
-                    result.append(el)
+                if isinstance(el, etree._Element):
+                    if id(el) not in seen:
+                        seen.add(id(el))
+                        result.append(el)
             elements = result
         else:
             elements = [elements]
