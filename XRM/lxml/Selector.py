@@ -57,24 +57,24 @@ class Filter:
 
     @classmethod
     def text_contains(cls, value: str) -> 'Filter':
-        return cls(lambda el: value in ("".join(el.itertext()) or ''))
+        return cls(lambda el: isinstance(el, etree._Element) and value in ("".join(el.itertext()) or ''))
 
     @classmethod
     def text_equals(cls, value: str) -> 'Filter':
-        return cls(lambda el: ("".join(el.itertext()).strip() or '') == value)
+        return cls(lambda el: isinstance(el, etree._Element) and ("".join(el.itertext()).strip() or '') == value)
 
     @classmethod
     def text_matches(cls, pattern: str) -> 'Filter':
         regex = re.compile(pattern)
-        return cls(lambda el: bool(regex.search("".join(el.itertext()) or '')))
+        return cls(lambda el: isinstance(el, etree._Element) and bool(regex.search("".join(el.itertext()) or '')))
 
     @classmethod
     def text_exists(cls) -> 'Filter':
-        return cls(lambda el: bool(("".join(el.itertext()) or '').strip()))
+        return cls(lambda el: isinstance(el, etree._Element) and bool(("".join(el.itertext()) or '').strip()))
 
     @classmethod
     def text_not_exists(cls) -> 'Filter':
-        return cls(lambda el: not ("".join(el.itertext()) or '').strip())
+        return cls(lambda el: not (isinstance(el, etree._Element) and ("".join(el.itertext()) or '').strip()))
 
     # Optional fluent versions
     def and_(self, other: 'Filter') -> 'Filter':
