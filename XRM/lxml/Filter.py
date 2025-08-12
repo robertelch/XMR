@@ -1,0 +1,96 @@
+import re
+from typing import Callable, Optional, Union
+from lxml import etree
+
+
+class Filter:
+    def __init__(self, func: Optional[Callable[[etree._Element], bool]] = None):
+        self.func: Callable[[etree._Element], bool] = func or (lambda el: True)
+
+    def __call__(self, element: etree._Element) -> bool:
+        return self.func(element)
+
+    # Factory methods
+    @classmethod
+    def contains(cls, attr_name: str, value: str) -> 'Filter':
+        return cls(lambda el: value in (el.get(attr_name) or ''))
+
+    @classmethod
+    def contains_all(cls, attr_name: str, values: list[str]) -> 'Filter':
+        if isinstance(values, str):
+            values = [values]
+        return cls(lambda el: all(val in (el.get(attr_name) or '') for val in values))
+
+    @classmethod
+    def not_contains(cls, attr_name: str, value: str) -> 'Filter':
+        return cls(lambda el: value not in (el.get(attr_name) or ''))
+
+    @classmethod
+    def equals(cls, attr_name: str, value: str) -> 'Filter':
+        return cls(lambda el: el.get(attr_name) == value)
+
+    @classmethod
+    def not_equals(cls, attr_name: str, value: str) -> 'Filter':
+        return cls(lambda el: el.get(attr_name) != value)
+
+    @classmethod
+    def starts_with(cls, attr_name: str, value: str) -> 'Filter':
+        return cls(lambda el: (el.get(attr_name) or '').startswith(value))
+
+    @classmethod
+    def ends_with(cls, attr_name: str, value: str) -> 'Filter':
+        return cls(lambda el: (el.get(attr_name) or '').endswith(value))
+
+    @classmethod
+    def matches(cls, attr_name: str, pattern: str) -> 'Filter':
+        regex = re.compile(pattern)
+        return cls(lambda el: bool(regex.search(el.get(attr_name) or '')))
+
+    @classmethod
+    def exists(cls, attr_name: str) -> 'Filter':
+        return cls(lambda el: el.get(attr_name) is not None)
+
+    @classmethod
+    def not_exists(cls, attr_name: str) -> 'Filter':
+        return cls(lambda el: el.get(attr_name) is None)
+
+    @classmethod
+    def text_contains(cls, value: str) -> 'Filter':
+        return cls(lambda el: value in ("".join(el.itertext()) or ''))
+
+    @classmethod
+    def text_equals(cls, value: str) -> 'Filter':
+        return cls(lambda el: ("".join(el.itertext()).strip() or '') == value)
+
+    @classmethod
+    def text_matches(cls, pattern: str) -> 'Filter':
+        regex = re.compile(pattern)
+        return cls(lambda el: bool(regex.search("".join(el.itertext()) or '')))
+
+    @classmethod
+    def text_exists(cls) -> 'Filter':
+        return cls(lambda el: bool(("".join(el.itertext()) or '').strip()))
+
+    @classmethod
+    def text_not_exists(cls) -> 'Filter':
+        return cls(lambda el: not ("".join(el.itertext()) or '').strip())
+
+    # Optional fluent versions
+    def and_(self, other: 'Filter') -> 'Filter':
+        return self & other
+
+    def or_(self, other: 'Filter') -> 'Filter':
+        return self | other
+
+    def invert(self) -> 'Filter':
+        return ~self
+
+    # Logical combinators
+    def __and__(self, other: 'Filter') -> 'Filter':
+        return Filter(lambda el: self(el) and other(el))
+
+    def __or__(self, other: 'Filter') -> 'Filter':
+        return Filter(lambda el: self(el) or other(el))
+
+    def __invert__(self) -> 'Filter':
+        return Filter(lambda el: not self(el))
