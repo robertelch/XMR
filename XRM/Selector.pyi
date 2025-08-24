@@ -37,8 +37,6 @@ class Filter:
         """
         ...
 
-
-
     @classmethod
     def contains(cls, attr_name: str, value: str) -> 'Filter':
         """
@@ -175,68 +173,6 @@ class Filter:
         """
         ...
 
-    def __and__(self, other: 'Filter') -> 'Filter':
-        """
-        Combine two filters with logical AND operation.
-
-        :param other: Another Filter instance to combine.
-        :type other: Filter
-        :return: A Filter instance matching elements that satisfy both filters.
-        :rtype: Filter
-        """
-        ...
-
-    def __or__(self, other: 'Filter') -> 'Filter':
-        """
-        Combine two filters with logical OR operation.
-
-        :param other: Another Filter instance to combine.
-        :type other: Filter
-        :return: A Filter instance matching elements that satisfy at least one filter.
-        :rtype: Filter
-        """
-        ...
-
-    def __invert__(self) -> 'Filter':
-        """
-        Negate the filter, matching elements that do NOT satisfy this filter.
-
-        :return: A Filter instance matching elements failing this filter.
-        :rtype: Filter
-        """
-        ...
-
-    def and_(self, other: 'Filter') -> 'Filter':
-        """
-        Fluent method to combine two filters with logical AND.
-
-        :param other: Another Filter instance.
-        :type other: Filter
-        :return: A Filter instance matching elements passing both filters.
-        :rtype: Filter
-        """
-        ...
-
-    def or_(self, other: 'Filter') -> 'Filter':
-        """
-        Fluent method to combine two filters with logical OR.
-
-        :param other: Another Filter instance.
-        :type other: Filter
-        :return: A Filter instance matching elements passing either filter.
-        :rtype: Filter
-        """
-        ...
-
-    def invert(self) -> 'Filter':
-        """
-        Fluent method to negate the filter.
-
-        :return: A Filter instance matching elements not passing this filter.
-        :rtype: Filter
-        """
-        ...
-
     @classmethod
     def text_contains(cls, value: str) -> 'Filter':
         """
@@ -287,6 +223,68 @@ class Filter:
         :return: A Filter instance matching elements with no meaningful text.
         :rtype: Filter
         """
+
+
+    def and_(self, other: 'Filter') -> 'Filter':
+        """
+        Fluent method to combine two filters with logical AND.
+
+        :param other: Another Filter instance.
+        :type other: Filter
+        :return: A Filter instance matching elements passing both filters.
+        :rtype: Filter
+        """
+        ...
+
+    def or_(self, other: 'Filter') -> 'Filter':
+        """
+        Fluent method to combine two filters with logical OR.
+
+        :param other: Another Filter instance.
+        :type other: Filter
+        :return: A Filter instance matching elements passing either filter.
+        :rtype: Filter
+        """
+        ...
+
+    def invert(self) -> 'Filter':
+        """
+        Fluent method to negate the filter.
+
+        :return: A Filter instance matching elements not passing this filter.
+        :rtype: Filter
+        """
+        ...
+    def __and__(self, other: 'Filter') -> 'Filter':
+        """
+        Combine two filters with logical AND operation.
+
+        :param other: Another Filter instance to combine.
+        :type other: Filter
+        :return: A Filter instance matching elements that satisfy both filters.
+        :rtype: Filter
+        """
+        ...
+
+    def __or__(self, other: 'Filter') -> 'Filter':
+        """
+        Combine two filters with logical OR operation.
+
+        :param other: Another Filter instance to combine.
+        :type other: Filter
+        :return: A Filter instance matching elements that satisfy at least one filter.
+        :rtype: Filter
+        """
+        ...
+
+    def __invert__(self) -> 'Filter':
+        """
+        Negate the filter, matching elements that do NOT satisfy this filter.
+
+        :return: A Filter instance matching elements failing this filter.
+        :rtype: Filter
+        """
+        ...
 
 class StringList:
     def __init__(self, elements: List[str]) -> 'StringList':
