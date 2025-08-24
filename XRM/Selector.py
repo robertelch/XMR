@@ -11,7 +11,6 @@ class Filter:
     def __call__(self, element: etree._Element) -> bool:
         return self.func(element)
 
-    # Factory methods
     @classmethod
     def contains(cls, attr_name: str, value: str) -> 'Filter':
         return cls(lambda el: value in (el.get(attr_name) or ''))
