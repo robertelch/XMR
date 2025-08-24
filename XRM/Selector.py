@@ -1,12 +1,104 @@
-from typing import Callable, Union
-from XRM import Filter
-from bs4 import BeautifulSoup, Tag, NavigableString
-from itertools import chain
+from lxml import etree, html
+from typing import Callable, Optional, Union, List
 import re
-from typing import Union
+from itertools import chain
+
+
+class Filter:
+    def __init__(self, func: Optional[Callable[[etree._Element], bool]] = None):
+        self.func: Callable[[etree._Element], bool] = func or (lambda el: True)
+
+    def __call__(self, element: etree._Element) -> bool:
+        return self.func(element)
+
+    # Factory methods
+    @classmethod
+    def contains(cls, attr_name: str, value: str) -> 'Filter':
+        return cls(lambda el: value in (el.get(attr_name) or ''))
+
+    @classmethod
+    def contains_all(cls, attr_name: str, values: list[str]) -> 'Filter':
+        if isinstance(values, str):
+            values = [values]
+        return cls(lambda el: all(val in (el.get(attr_name) or '') for val in values))
+
+    @classmethod
+    def not_contains(cls, attr_name: str, value: str) -> 'Filter':
+        return cls(lambda el: value not in (el.get(attr_name) or ''))
+
+    @classmethod
+    def equals(cls, attr_name: str, value: str) -> 'Filter':
+        return cls(lambda el: el.get(attr_name) == value)
+
+    @classmethod
+    def not_equals(cls, attr_name: str, value: str) -> 'Filter':
+        return cls(lambda el: el.get(attr_name) != value)
+
+    @classmethod
+    def starts_with(cls, attr_name: str, value: str) -> 'Filter':
+        return cls(lambda el: (el.get(attr_name) or '').startswith(value))
+
+    @classmethod
+    def ends_with(cls, attr_name: str, value: str) -> 'Filter':
+        return cls(lambda el: (el.get(attr_name) or '').endswith(value))
+
+    @classmethod
+    def matches(cls, attr_name: str, pattern: str) -> 'Filter':
+        regex = re.compile(pattern)
+        return cls(lambda el: bool(regex.search(el.get(attr_name) or '')))
+
+    @classmethod
+    def exists(cls, attr_name: str) -> 'Filter':
+        return cls(lambda el: el.get(attr_name) is not None)
+
+    @classmethod
+    def not_exists(cls, attr_name: str) -> 'Filter':
+        return cls(lambda el: el.get(attr_name) is None)
+
+    @classmethod
+    def text_contains(cls, value: str) -> 'Filter':
+        return cls(lambda el: isinstance(el, etree._Element) and value in ("".join(el.itertext()) or ''))
+
+    @classmethod
+    def text_equals(cls, value: str) -> 'Filter':
+        return cls(lambda el: isinstance(el, etree._Element) and ("".join(el.itertext()).strip() or '') == value)
+
+    @classmethod
+    def text_matches(cls, pattern: str) -> 'Filter':
+        regex = re.compile(pattern)
+        return cls(lambda el: isinstance(el, etree._Element) and bool(regex.search("".join(el.itertext()) or '')))
+
+    @classmethod
+    def text_exists(cls) -> 'Filter':
+        return cls(lambda el: isinstance(el, etree._Element) and bool(("".join(el.itertext()) or '').strip()))
+
+    @classmethod
+    def text_not_exists(cls) -> 'Filter':
+        return cls(lambda el: not (isinstance(el, etree._Element) and ("".join(el.itertext()) or '').strip()))
+
+    # Optional fluent versions
+    def and_(self, other: 'Filter') -> 'Filter':
+        return self & other
+
+    def or_(self, other: 'Filter') -> 'Filter':
+        return self | other
+
+    def invert(self) -> 'Filter':
+        return ~self
+
+    # Logical combinators
+    def __and__(self, other: 'Filter') -> 'Filter':
+        return Filter(lambda el: self(el) and other(el))
+
+    def __or__(self, other: 'Filter') -> 'Filter':
+        return Filter(lambda el: self(el) or other(el))
+
+    def __invert__(self) -> 'Filter':
+        return Filter(lambda el: not self(el))
+
 
 class StringList:
-    def __init__(self, elements: list[str]) -> 'StringList':
+    def __init__(self, elements: List[str]) -> 'StringList':
         self.elements = elements
 
     def __iter__(self):
@@ -40,7 +132,7 @@ class StringList:
     def split_and_index(self, split_char: str, index: int) -> 'StringList':
         return StringList([el.split(split_char)[index] for el in self.elements])
 
-    def as_list(self) -> list[str]:
+    def as_list(self) -> List[str]:
         return self.elements
     
     def clean(self) -> 'StringList':
@@ -61,24 +153,29 @@ class StringList:
     def re_search(self, pattern: str) -> 'StringList':
         return StringList([(r.group() if (r := re.search(pattern, el)) else None) for el in self.elements])
 
+
 class Selector:
-    def __init__(self, elements: Union[Tag , list[Tag] , 'Selector']):
+    def __init__(self, elements: Union[etree._Element, List[etree._Element], 'Selector']):
         if isinstance(elements, Selector):
             elements = elements.elements
+
+
         elif isinstance(elements, list):
-            elements = [el if isinstance(el, Tag) else el.element for el in elements]
+            # Filter out duplicates by id
+            seen = set()
+            result = []
+            for el in elements:
+                if isinstance(el, etree._Element) and not isinstance(el, etree._Comment):
+                    if id(el) not in seen:
+                        seen.add(id(el))
+                        result.append(el)
+            elements = result
         else:
             elements = [elements]
-        seen = set()
-        result = []
-        for item in elements:
-            if id(item) not in seen:
-                seen.add(id(item))
-                result.append(item)
-        self.elements: list[Tag] = result
+        self.elements: List[etree._Element] = elements
 
     def __repr__(self):
-        names = [el.name for el in self.elements]
+        names = [el.tag if hasattr(el, 'tag') else str(el) for el in self.elements]
         return f"Selector([{', '.join(names)}])"
 
     def __iter__(self):
@@ -120,59 +217,115 @@ class Selector:
 
     @classmethod
     def from_html_string(cls, htmlstr: str) -> 'Selector':
-        soup = BeautifulSoup(htmlstr, "lxml")
-        return cls(soup)
-    
+        parser = html.HTMLParser(encoding='utf-8')
+        tree = html.fromstring(htmlstr, parser=parser)
+        return cls(tree)
+
     def __wildcard_check(self, tag: str):
-        return True if tag == "*" else tag
-    
-    def __collect_truthy(self, func: Callable[[Tag], Union[Tag , list[Tag]]]) -> list[Tag]:
+        return "*" if tag == "*" else tag
+
+    # Collect elements from function returns (which may be single element or list)
+    def __collect_truthy(self, func: Callable[[etree._Element], Union[etree._Element, List[etree._Element], None]]) -> List[etree._Element]:
         result = []
         for el in self.elements:
             val = func(el)
             if val:
-                if isinstance(val, Tag):
-                    result.append(val)
-                elif isinstance(val, list):
+                if isinstance(val, list):
                     result.extend(val)
-        return result
+                else:
+                    result.append(val)
+        # Deduplicate by id
+        seen = set()
+        unique = []
+        for el in result:
+            if id(el) not in seen:
+                seen.add(id(el))
+                unique.append(el)
+        return unique
 
     def text(self) -> StringList:
-        text = [t for e in self.elements if (t := e.get_text(strip=True))]
-        return StringList(text)
+        texts = []
+        for el in self.elements:
+            text_content = ''.join(el.itertext()).strip()
+            if text_content:
+                texts.append(text_content)
+        return StringList(texts)
 
     def preceding_siblings(self, tag: str = "*") -> 'Selector':
         tag = self.__wildcard_check(tag)
-        siblings = self.__collect_truthy(lambda el: el.find_previous_siblings(tag))
+        def get_preceding_siblings(el):
+            # lxml: get siblings before el with the same parent
+            parent = el.getparent()
+            if parent is None:
+                return []
+            siblings = []
+            for sib in parent.iterchildren():
+                if sib is el:
+                    break
+                if tag == "*" or sib.tag == tag:
+                    siblings.append(sib)
+            return siblings
+        siblings = self.__collect_truthy(get_preceding_siblings)
         return Selector(siblings)
 
     def following_siblings(self, tag: str = "*") -> 'Selector':
         tag = self.__wildcard_check(tag)
-        siblings = self.__collect_truthy(lambda el: el.find_next_siblings(tag))
+        def get_following_siblings(el):
+            parent = el.getparent()
+            if parent is None:
+                return []
+            siblings = []
+            found = False
+            for sib in parent.iterchildren():
+                if found:
+                    if tag == "*" or sib.tag == tag:
+                        siblings.append(sib)
+                if sib is el:
+                    found = True
+            return siblings
+        siblings = self.__collect_truthy(get_following_siblings)
         return Selector(siblings)
 
-    def siblings(self, tag: str = "*"):
-        tag = self.__wildcard_check(tag)
-        siblings = self.preceding_siblings(tag) + self.following_siblings(tag) 
-        return siblings
+    def siblings(self, tag: str = "*") -> 'Selector':
+        return self.preceding_siblings(tag) + self.following_siblings(tag)
 
     def descendants(self, tag: str = "*") -> 'Selector':
         tag = self.__wildcard_check(tag)
-        siblings = self.__collect_truthy(lambda el: el.find_all(tag))
-        return Selector(siblings)
+        descendants = []
+        for el in self.elements:
+            if tag == "*":
+                descendants.extend(list(el.iterdescendants()))
+            else:
+                descendants.extend(el.iterdescendants(tag=tag))
+        return Selector(descendants)
 
     def parent(self) -> 'Selector':
-        found = self.__collect_truthy(lambda el: el.parent)
-        return Selector(found)
+        parents = []
+        for el in self.elements:
+            p = el.getparent()
+            if p is not None:
+                parents.append(p)
+        return Selector(parents)
 
     def children(self, tag: str = "*") -> 'Selector':
         tag = self.__wildcard_check(tag)
-        found = self.__collect_truthy(lambda el: el.find_all(tag, recursive=False))
-        return Selector(found)
+        children = []
+        for el in self.elements:
+            for child in el.iterchildren():
+                if tag == "*" or child.tag == tag:
+                    children.append(child)
+        return Selector(children)
 
     def __nth_sub_element(self, tag: str = "*", n: int = 1, recursive: bool = True) -> 'Selector':
         tag = self.__wildcard_check(tag)
-        found = [match[n - 1] for el in self.elements if (match := el.find_all(tag, recursive=recursive)) and len(match) >= n]
+        found = []
+        for el in self.elements:
+            if recursive:
+                elems = list(el.iterdescendants(tag=tag))
+            else:
+                elems = [c for c in el.iterchildren() if tag == "*" or c.tag == tag]
+            if len(elems) >= n:
+                found.append(elems[n-1])
         return Selector(found)
 
     def nth_descendant(self, tag: str = "*", n: int = 1) -> 'Selector':
@@ -182,17 +335,47 @@ class Selector:
         return self.__nth_sub_element(tag, n, recursive=False)
 
     def get_attribute(self, attribute: str) -> StringList:
-        return StringList([el.get(attribute) for el in self.elements])
+        attrs = []
+        for el in self.elements:
+            val = el.get(attribute)
+            attrs.append(val if val is not None else '')
+        return StringList(attrs)
 
-    def filter(self, filter_obj: Filter) -> 'Selector':
+    # Assuming Filter is a callable that accepts an lxml Element and returns bool
+    def filter(self, filter_obj: Callable[[etree._Element], bool]) -> 'Selector':
         filtered_elements = [el for el in self.elements if filter_obj(el)]
         return Selector(filtered_elements)
 
     def own_text(self) -> StringList:
         texts = []
         for el in self.elements:
-            own_strings = [str(t).strip() for t in el.contents if isinstance(t, NavigableString)]
-            combined = ' '.join(s for s in own_strings if s)
+            # Own text is text directly inside the element excluding child tags
+            own_text_parts = []
+            if el.text:
+                own_text_parts.append(el.text.strip())
+            for child in el:
+                if child.tail:
+                    own_text_parts.append(child.tail.strip())
+            combined = ' '.join([part for part in own_text_parts if part])
             if combined:
                 texts.append(combined)
         return StringList(texts)
+
+    def xpath(self, xpath_expr: str) -> 'Selector':
+
+        results = []
+        for el in self.elements:
+            res = el.xpath(xpath_expr)
+            # xpath may return elements or strings, filter for elements
+            if isinstance(res, list):
+                for r in res:
+                    if isinstance(r, etree._Element):
+                        results.append(r)
+                    elif isinstance(r, str):
+                        # wrap text nodes in a fake element or ignore? 
+                        # Here, we ignore text-only results for Selector
+                        pass
+            else:
+                if isinstance(res, etree._Element):
+                    results.append(res)
+        return Selector(results)
